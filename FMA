@@ -127,10 +127,10 @@ local function flyControl()
 	if UserInputService:IsKeyDown(Enum.KeyCode.D) then
 		direction = direction + camera.CFrame.RightVector
 	end
-	if UserInputService:IsKeyDown(Enum.KeyCode.Space) then
+	if UserInputService:IsKeyDown(Enum.KeyCode.T) then
 		direction = direction + Vector3.new(0,1,0)
 	end
-	if UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) then
+	if UserInputService:IsKeyDown(Enum.KeyCode.G) then
 		direction = direction - Vector3.new(0,1,0)
 	end
 	
