@@ -46,7 +46,7 @@ Watermark:AddText({Icon = "server", Text = Compkiller.Version});
 
 -- Creating Container Tab --
 local ContainerTab = Window:DrawContainerTab({
-	Name = "Extract Tabs",
+	Name = "Meta Feature",
 	Icon = "contact",
 });
 
