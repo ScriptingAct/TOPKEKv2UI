@@ -51,7 +51,7 @@ local ContainerTab = Window:DrawContainerTab({
 });
 
 local ExtractTab = ContainerTab:DrawTab({
-	Name = "Tab 1",
+	Name = "Meta Feature Tabs",
 	Type = "Double"
 });
 
