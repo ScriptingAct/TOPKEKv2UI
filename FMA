@@ -14,7 +14,8 @@ Compkiller:Loader("rbxassetid://120245531583106" , 2.5).yield();
 
 -- Creating Window --
 local Window = Compkiller.new({
-	Name = "TOPKEKV-2 [Premium_Edition - 99 Nights ]",
+	Name = "TOPKEKV-2 
+[Premium_Edition - 99 Nights ]",
 	Keybind = "LeftAlt",
 	Logo = "rbxassetid://120245531583106",
 	Scale = Compkiller.Scale.Window,
