@@ -1,0 +1,295 @@
+local Compkiller = loadstring(game:HttpGet("https://raw.githubusercontent.com/4lpaca-pin/CompKiller/refs/heads/main/src/source.luau"))();
+
+-- Create Notification --
+local Notifier = Compkiller.newNotify();
+
+-- Create Config Mamager --
+local ConfigManager = Compkiller:ConfigManager({
+	Directory = "Compkiller-UI",
+	Config = "Example-Configs"
+});
+
+-- Loading UI (Icon <string> , Duration <number>) --
+Compkiller:Loader("rbxassetid://120245531583106" , 2.5).yield();
+
+-- Creating Window --
+local Window = Compkiller.new({
+	Name = "COMPKILLER",
+	Keybind = "LeftAlt",
+	Logo = "rbxassetid://120245531583106",
+	Scale = Compkiller.Scale.Window,
+	TextSize = 15,
+});
+
+-- Notification --
+Notifier.new({
+	Title = "Notification",
+	Content = "Thank you for use this script!",
+	Duration = 10,
+	Icon = "rbxassetid://120245531583106"
+});
+
+-- Watermark --
+local Watermark = Window:Watermark();
+
+Watermark:AddText({Icon = "user", Text = "4lpaca"});
+Watermark:AddText({Icon = "clock", Text = Compkiller:GetDate()});
+local Time = Watermark:AddText({Icon = "timer", Text = "TIME"});
+
+task.spawn(function()
+	while true do task.wait()
+		Time:SetText(Compkiller:GetTimeNow());
+	end
+end)
+
+Watermark:AddText({Icon = "server", Text = Compkiller.Version});
+
+-- Creating Container Tab --
+local ContainerTab = Window:DrawContainerTab({
+	Name = "Extract Tabs",
+	Icon = "contact",
+});
+
+local ExtractTab = ContainerTab:DrawTab({
+	Name = "Tab 1",
+	Type = "Double"
+});
+
+-- Section ฝั่งซ้ายของ ExtractTab --
+local LeftSection = ExtractTab:DrawSection({
+	Name = "Movement",
+	Position = "left"
+});
+
+-- Walkspeed Toggle และ Slider --
+local player = game:GetService("Players").LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+
+local walkSpeedEnabled = false
+local walkSpeedValue = 16 -- ค่าเริ่มต้น
+
+-- Toggle Walkspeed
+local WalkspeedToggle = LeftSection:AddToggle({
+	Name = "Enable Walkspeed",
+	Flag = "Walkspeed_Toggle",
+	Default = false,
+	Callback = function(enabled)
+		walkSpeedEnabled = enabled
+		if enabled then
+			humanoid.WalkSpeed = walkSpeedValue
+		else
+			humanoid.WalkSpeed = 16 -- รีเซ็ตกลับค่าเริ่มต้น
+		end
+	end,
+})
+
+-- Slider Walkspeed
+local WalkspeedSlider = LeftSection:AddSlider({
+	Name = "Walkspeed",
+	Min = 16,
+	Max = 100,
+	Default = 16,
+	Round = 1,
+	Flag = "Walkspeed_Slider",
+	Callback = function(value)
+		walkSpeedValue = value
+		-- อัพเดตความเร็วเดินแค่ถ้า toggled on
+		if walkSpeedEnabled then
+			humanoid.WalkSpeed = walkSpeedValue
+		end
+	end,
+})
+
+-- Fly Toggle และ Slider --
+local flyEnabled = false
+local flySpeed = 50
+
+local BodyVelocity
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local camera = workspace.CurrentCamera
+
+local function flyControl()
+	if not flyEnabled then return end
+	
+	local direction = Vector3.new(0,0,0)
+	
+	if UserInputService:IsKeyDown(Enum.KeyCode.W) then
+		direction = direction + camera.CFrame.LookVector
+	end
+	if UserInputService:IsKeyDown(Enum.KeyCode.S) then
+		direction = direction - camera.CFrame.LookVector
+	end
+	if UserInputService:IsKeyDown(Enum.KeyCode.A) then
+		direction = direction - camera.CFrame.RightVector
+	end
+	if UserInputService:IsKeyDown(Enum.KeyCode.D) then
+		direction = direction + camera.CFrame.RightVector
+	end
+	if UserInputService:IsKeyDown(Enum.KeyCode.Space) then
+		direction = direction + Vector3.new(0,1,0)
+	end
+	if UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) then
+		direction = direction - Vector3.new(0,1,0)
+	end
+	
+	direction = direction.Unit
+	if direction ~= direction then direction = Vector3.new(0,0,0) end -- ตรวจ NaN
+	
+	if BodyVelocity then
+		BodyVelocity.Velocity = direction * flySpeed
+	end
+end
+
+local FlyToggle = LeftSection:AddToggle({
+	Name = "Enable Fly",
+	Flag = "Fly_Toggle",
+	Default = false,
+	Callback = function(enabled)
+		flyEnabled = enabled
+		local rootPart = character:FindFirstChild("HumanoidRootPart")
+		if enabled then
+			if rootPart then
+				BodyVelocity = Instance.new("BodyVelocity")
+				BodyVelocity.MaxForce = Vector3.new(1e5,1e5,1e5)
+				BodyVelocity.Velocity = Vector3.new(0,0,0)
+				BodyVelocity.Parent = rootPart
+				Notifier.new({Title="Fly", Content="Fly enabled!", Duration=3, Icon="rbxassetid://120245531583106"})
+				RunService:BindToRenderStep("FlyControl", Enum.RenderPriority.Character.Value, flyControl)
+			end
+		else
+			if BodyVelocity then
+				BodyVelocity:Destroy()
+				BodyVelocity = nil
+				Notifier.new({Title="Fly", Content="Fly disabled!", Duration=3, Icon="rbxassetid://120245531583106"})
+			end
+			RunService:UnbindFromRenderStep("FlyControl")
+		end
+	end,
+})
+
+local FlySpeedSlider = LeftSection:AddSlider({
+	Name = "Fly Speed",
+	Min = 10,
+	Max = 200,
+	Default = 50,
+	Round = 1,
+	Flag = "Fly_Speed_Slider",
+	Callback = function(value)
+		flySpeed = value
+	end,
+})
+
+-- ตัวแปรและฟังก์ชันสำหรับ Loop No Fog และ Loop Fullbright
+local noFogEnabled = false
+local fullBrightEnabled = false
+
+local Lighting = game:GetService("Lighting")
+
+local function loopNoFog()
+    while noFogEnabled do
+        Lighting.FogEnd = 100000
+        Lighting.FogStart = 0
+        task.wait(0.1)
+    end
+end
+
+local function loopFullbright()
+    while fullBrightEnabled do
+        Lighting.Brightness = 2
+        Lighting.Ambient = Color3.new(1,1,1)
+        Lighting.OutdoorAmbient = Color3.new(1,1,1)
+        task.wait(0.1)
+    end
+end
+
+-- No Fog Toggle
+LeftSection:AddToggle({
+    Name = "Loop No Fog",
+    Flag = "NoFog_Toggle",
+    Default = false,
+    Callback = function(enabled)
+        noFogEnabled = enabled
+        if enabled then
+            task.spawn(loopNoFog)
+            Notifier.new({Title="No Fog", Content="Loop No Fog Enabled!", Duration=3, Icon="rbxassetid://120245531583106"})
+        else
+            Lighting.FogEnd = 1000
+            Lighting.FogStart = 0
+            Notifier.new({Title="No Fog", Content="Loop No Fog Disabled!", Duration=3, Icon="rbxassetid://120245531583106"})
+        end
+    end,
+})
+
+-- Fullbright Toggle
+LeftSection:AddToggle({
+    Name = "Loop Fullbright",
+    Flag = "Fullbright_Toggle",
+    Default = false,
+    Callback = function(enabled)
+        fullBrightEnabled = enabled
+        if enabled then
+            task.spawn(loopFullbright)
+            Notifier.new({Title="Fullbright", Content="Loop Fullbright Enabled!", Duration=3, Icon="rbxassetid://120245531583106"})
+        else
+            Lighting.Brightness = 1
+            Lighting.Ambient = Color3.new(0.5,0.5,0.5)
+            Lighting.OutdoorAmbient = Color3.new(0.5,0.5,0.5)
+            Notifier.new({Title="Fullbright", Content="Loop Fullbright Disabled!", Duration=3, Icon="rbxassetid://120245531583106"})
+        end
+    end,
+})
+
+-- Creating Misc category --
+Window:DrawCategory({
+	Name = "Misc"
+});
+
+local MiscTab = Window:DrawTab({
+	Name = "Settings",
+	Icon = "settings-3",
+	Type = "Single",
+	EnableScrolling = true
+});
+
+local SettingsSection = MiscTab:DrawSection({
+	Name = "UI Settings"
+});
+
+SettingsSection:AddToggle({
+	Name = "Always Show Frame",
+	Default = false,
+	Callback = function(v)
+		Window.AlwayShowTab = v;
+	end,
+});
+
+SettingsSection:AddColorPicker({
+	Name = "Highlight",
+	Default = Compkiller.Colors.Highlight,
+	Callback = function(v)
+		Compkiller.Colors.Highlight = v;
+		Compkiller:RefreshCurrentColor();
+	end,
+});
+
+SettingsSection:AddColorPicker({
+	Name = "Toggle Color",
+	Default = Compkiller.Colors.Toggle,
+	Callback = function(v)
+		Compkiller.Colors.Toggle = v;
+		Compkiller:RefreshCurrentColor(v);
+	end,
+});
+
+-- ... เพิ่มเติม color pickers ตามโค้ดตัวอย่างของคุณได้เลย
+
+-- สร้าง Config Tab ตามตัวอย่าง
+local ConfigUI = Window:DrawConfig({
+	Name = "Config",
+	Icon = "folder",
+	Config = ConfigManager
+});
+
+ConfigUI:Init();
