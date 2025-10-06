@@ -32,7 +32,7 @@ Notifier.new({
 -- Watermark --
 local Watermark = Window:Watermark();
 
-Watermark:AddText({Icon = "user", Text = "4lpaca"});
+Watermark:AddText({Icon = "user", Text = ""});
 Watermark:AddText({Icon = "clock", Text = Compkiller:GetDate()});
 local Time = Watermark:AddText({Icon = "timer", Text = "TIME"});
 
