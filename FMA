@@ -218,7 +218,7 @@ local function loopFullbright()
 end
 
 RightSection:AddToggle({
-	Name = "Loop No Fog",
+	Name = "No Fog",
 	Flag = "NoFog_Toggle",
 	Default = false,
 	Callback = function(enabled)
@@ -235,7 +235,7 @@ RightSection:AddToggle({
 })
 
 RightSection:AddToggle({
-	Name = "Loop Fullbright",
+	Name = "Fullbright",
 	Flag = "Fullbright_Toggle",
 	Default = false,
 	Callback = function(enabled)
