@@ -69,9 +69,9 @@ local player = game:GetService("Players").LocalPlayer
 local character = player.Character or player.CharacterAdded:Wait()
 local humanoid = character:WaitForChild("Humanoid")
 
--- Walkspeed
 local walkSpeedEnabled = false
 local walkSpeedValue = 16
+local walkSpeedLoop
 
 LeftSection:AddToggle({
 	Name = "Enable Walkspeed",
@@ -80,8 +80,18 @@ LeftSection:AddToggle({
 	Callback = function(enabled)
 		walkSpeedEnabled = enabled
 		if enabled then
-			humanoid.WalkSpeed = walkSpeedValue
+			-- เริ่ม loop ตั้งค่า WalkSpeed ทุกช่วงเวลาเล็กน้อย
+			walkSpeedLoop = task.spawn(function()
+				while walkSpeedEnabled do
+					humanoid.WalkSpeed = walkSpeedValue
+					task.wait(0.1)
+				end
+				-- ถ้า disable ให้ reset กลับเป็น 16
+				humanoid.WalkSpeed = 16
+			end)
 		else
+			-- หยุด loop และ reset ค่า
+			walkSpeedEnabled = false
 			humanoid.WalkSpeed = 16
 		end
 	end,
@@ -99,6 +109,36 @@ LeftSection:AddSlider({
 		if walkSpeedEnabled then
 			humanoid.WalkSpeed = walkSpeedValue
 		end
+	end,
+})
+
+local infiniteJumpEnabled = false
+local UserInputService = game:GetService("UserInputService")
+
+UserInputService.JumpRequest:Connect(function()
+	if infiniteJumpEnabled then
+		if humanoid and humanoid:GetState() ~= Enum.HumanoidStateType.Freefall then
+			-- ถ้ากำลังยืนบนพื้น (หรือสถานะอื่น ๆ ที่ไม่ใช่ Freefall)
+			humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+		else
+			-- ถ้ากำลังอยู่กลางอากาศ ให้บังคับให้กระโดดได้อีกครั้ง
+			humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+		end
+	end
+end)
+
+LeftSection:AddToggle({
+	Name = "Infinite Jump",
+	Flag = "InfiniteJump_Toggle",
+	Default = false,
+	Callback = function(enabled)
+		infiniteJumpEnabled = enabled
+		Notifier.new({
+			Title = "Infinite Jump",
+			Content = enabled and "Infinite Jump Enabled!" or "Infinite Jump Disabled!",
+			Duration = 3,
+			Icon = "rbxassetid://120245531583106"
+		})
 	end,
 })
 
