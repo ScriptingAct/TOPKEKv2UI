@@ -197,6 +197,72 @@ local function disableFly()
 	RunService:UnbindFromRenderStep("FlyControl")
 end
 
+-- 📱 GUI สำหรับมือถือ (Touch Screen)
+if UserInputService.TouchEnabled then
+	local screenGui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+	screenGui.Name = "FlyMobileUI"
+	screenGui.ResetOnSpawn = false
+	screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+	local function createButton(text, position, onDown, onUp)
+		local btn = Instance.new("TextButton")
+		btn.Size = UDim2.new(0, 80, 0, 50)
+		btn.Position = position
+		btn.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
+		btn.TextColor3 = Color3.new(1, 1, 1)
+		btn.TextScaled = true
+		btn.Font = Enum.Font.GothamBold
+		btn.Text = text
+		btn.Parent = screenGui
+
+		btn.MouseButton1Down:Connect(onDown)
+		btn.MouseButton1Up:Connect(onUp)
+
+		return btn
+	end
+
+	-- ปุ่ม Toggle Fly
+	createButton("✈", UDim2.new(1, -100, 0.65, 0),
+		function()
+			flyEnabled = not flyEnabled
+			if flyEnabled then
+				enableFly()
+			else
+				disableFly()
+			end
+		end,
+		function() end
+	)
+
+	-- ขึ้น / ลง
+	createButton("⬆", UDim2.new(1, -100, 0.75, 0),
+		function() flyUp = true end,
+		function() flyUp = false end
+	)
+	createButton("⬇", UDim2.new(1, -100, 0.85, 0),
+		function() flyDown = true end,
+		function() flyDown = false end
+	)
+
+	-- เคลื่อนที่ (ซ้าย ขวา หน้า หลัง)
+	createButton("⬅", UDim2.new(0, 20, 0.85, 0),
+		function() moveLeft = true end,
+		function() moveLeft = false end
+	)
+	createButton("➡", UDim2.new(0, 120, 0.85, 0),
+		function() moveRight = true end,
+		function() moveRight = false end
+	)
+	createButton("⬆ เดิน", UDim2.new(0, 70, 0.8, 0),
+		function() moveForward = true end,
+		function() moveForward = false end
+	)
+	createButton("⬇ ถอย", UDim2.new(0, 70, 0.9, 0),
+		function() moveBackward = true end,
+		function() moveBackward = false end
+	)
+end
+
 RightSection:AddToggle({
 	Name = "Enable Fly",
 	Flag = "Fly_Toggle",
